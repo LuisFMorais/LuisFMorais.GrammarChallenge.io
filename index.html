@@ -1,0 +1,1300 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grammar Challenge</title>
+    <script src="https://cdn.tailwindcss.com">
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background: linear-gradient(135deg, #111111 0%, #2d3748 100%);
+            color: #e2e8f0;
+            min-height: 100vh;
+        }
+        h1,
+        .lyric-font {
+            font-family: 'Playfair Display', serif;
+        }
+        .fade-in {
+            animation: fadeIn 0.5s ease-in forwards;
+        }
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(15px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #111;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #718096;
+            border-radius: 4px;
+        }
+
+        .mode-btn:focus-visible,
+        button:focus-visible {
+            outline: 2px solid #e5e7eb;
+            outline-offset: 2px;
+        }
+        button:disabled {
+            cursor: default;
+        }
+        #timer-bar {
+            transition: width 1s linear;
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .fade-in {
+                animation: none;
+            }
+            * {
+                scroll-behavior: auto !important;
+            }
+        }
+
+        #game-hud-20 {
+            position: relative;
+            top: auto;
+            left: auto;
+            right: auto;
+            pointer-events: auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(4px);
+            border-radius: 9999px;
+            padding: 0.4rem 1rem;
+            margin-bottom: 1rem;
+            border: 1px solid #3f3f46;
+            width: 100%;
+        }
+        #game-hud-20>div {
+            pointer-events: auto;
+        }
+        #game-hud-20 .hud-item {
+            background: transparent;
+            border: none;
+            padding: 0.2rem 0.5rem;
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+        }
+
+        #mode-panel-20 {
+            margin-top: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .option-btn {
+            transition: all 0.2s ease;
+        }
+        .option-btn:not(:disabled):hover {
+            transform: scale(1.01);
+            border-color: #a1a1aa;
+        }
+        .option-btn.correct-highlight {
+            background: rgba(16, 185, 129, 0.25) !important;
+            border-color: #34d399 !important;
+            color: #d1fae5 !important;
+        }
+        .option-btn.wrong-highlight {
+            background: rgba(239, 68, 68, 0.25) !important;
+            border-color: #f87171 !important;
+            color: #fecaca !important;
+        }
+
+        #explanation-box {
+            border-left-width: 4px;
+        }
+        #explanation-box.border-emerald-500 {
+            border-color: #34d399;
+        }
+        #explanation-box.border-rose-500 {
+            border-color: #f87171;
+        }
+
+        #streak-toast {
+            position: fixed;
+            top: 1.25rem;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 999;
+            background: #f4f4f5;
+            color: #18181b;
+            padding: 0.5rem 1.5rem;
+            border-radius: 9999px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.6);
+            font-weight: 700;
+            font-size: 0.95rem;
+            pointer-events: none;
+        }
+
+        @media (max-width: 480px) {
+            #game-hud-20 {
+                flex-wrap: wrap;
+                justify-content: center;
+                border-radius: 1rem;
+                padding: 0.5rem 0.75rem;
+            }
+            #game-hud-20 .hud-item {
+                font-size: 0.75rem;
+                padding: 0.1rem 0.3rem;
+            }
+        }
+
+        #restart-game-btn {
+            background: transparent;
+            border: 1px solid #52525b;
+            color: #a1a1aa;
+            border-radius: 9999px;
+            padding: 0.2rem 0.9rem;
+            font-size: 0.7rem;
+            transition: 0.2s;
+            cursor: pointer;
+        }
+        #restart-game-btn:hover {
+            background: #27272a;
+            color: #e4e4e7;
+        }
+
+        .music-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            justify-content: center;
+            margin: 1rem 0;
+        }
+        .music-btn {
+            background: #27272a;
+            border: 2px solid #3f3f46;
+            border-radius: 9999px;
+            padding: 0.5rem 1.5rem;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #a1a1aa;
+            transition: all 0.2s;
+            cursor: pointer;
+        }
+        .music-btn.active {
+            border-color: #e4e4e7;
+            background: #3f3f46;
+            color: #f4f4f5;
+        }
+        .music-btn:hover {
+            background: #3f3f46;
+            color: #f4f4f5;
+        }
+        #current-song-label {
+            font-size: 0.8rem;
+            color: #a1a1aa;
+            margin-top: 0.5rem;
+        }
+    </style>
+</head>
+<body class="flex items-center justify-center p-4">
+
+    <main class="w-full max-w-3xl bg-zinc-900/80 backdrop-blur-md rounded-2xl p-6 md:p-10 shadow-2xl border border-zinc-700 relative overflow-hidden">
+
+        <div class="absolute top-[-100px] left-[-100px] w-64 h-64 bg-zinc-500 rounded-full mix-blend-overlay filter blur-3xl opacity-20"></div>
+
+
+        <div id="start-screen" class="text-center relative z-10 fade-in">
+            <p class="text-zinc-400 uppercase tracking-widest text-sm mb-2">Desafio de Inglês</p>
+            <h1 class="text-5xl md:text-6xl font-bold text-white mb-4">Grammar Challenge</h1>
+            <h2 class="text-2xl text-zinc-300 font-light mb-6">Análise de Tempos Verbais em Músicas</h2>
+
+            <div class="music-selector">
+                <button class="music-btn active" data-playlist="adele" onclick="selectPlaylist('adele')">🎤 Someone Like You</button>
+                <button class="music-btn" data-playlist="u2" onclick="selectPlaylist('u2')">🎸 I Still Haven't Found</button>
+            </div>
+            <div id="current-song-label">Música atual: <span id="current-song-name">Someone Like You</span></div>
+
+            <div class="bg-zinc-800/50 border border-zinc-700 rounded-xl p-6 mb-8 text-left max-w-lg mx-auto mt-4">
+                <p class="text-sm text-zinc-300 mb-2"><strong>Regras do Jogo:</strong></p>
+                <p class="text-sm text-zinc-400 mb-2">1. Analise o contexto da música escolhida.</p>
+                <p class="text-sm text-zinc-400 mb-2">2. Responda perguntas sobre tempos verbais: <em>Present Perfect, Simple Past, Present Simple, Present Continuous e Future.</em></p>
+                <p class="text-sm text-zinc-400">3. O foco é <strong>entender o porquê</strong> das escolhas gramaticais!</p>
+            </div>
+
+            <button onclick="startGame()" class="bg-zinc-100 hover:bg-white text-zinc-900 font-bold py-4 px-12 rounded-full text-lg transition-all transform hover:scale-105 shadow-lg">
+                Começar a Refletir
+            </button>
+
+            <div class="mt-6 max-w-lg mx-auto">
+                <button onclick="toggleAdvanced()" class="text-xs text-zinc-500 hover:text-zinc-200 underline">
+                    Opções avançadas
+                </button>
+                <div id="advanced-options" class="hidden mt-4 bg-zinc-800/40 border border-zinc-700 rounded-xl p-4 text-left">
+                    <label class="flex items-center justify-between gap-4 text-sm text-zinc-300 cursor-pointer">
+                        <span>⏱️ Ativar cronômetro no modo clássico</span>
+                        <input id="classic-timer-toggle" type="checkbox" class="w-4 h-4 accent-zinc-200">
+                    </label>
+                    <label class="flex items-center justify-between gap-4 text-sm text-zinc-300 cursor-pointer mt-3">
+                        <span>🔊 Efeitos sonoros</span>
+                        <input id="sound-toggle" type="checkbox" checked class="w-4 h-4 accent-zinc-200">
+                    </label>
+                </div>
+            </div>
+
+            <div class="relative z-10 mt-6 max-w-lg mx-auto">
+                <div class="text-xs uppercase tracking-widest text-zinc-500 mb-3">Escolha seu modo</div>
+                <div class="grid grid-cols-2 gap-3">
+                    <button id="start-classic" class="bg-zinc-800/60 border border-zinc-300 rounded-xl p-3 text-left hover:bg-zinc-700 transition">
+                        <strong class="block text-white">🎓 Clássico</strong>
+                        <span class="text-xs text-zinc-400">Aprenda no seu ritmo.</span>
+                    </button>
+                    <button id="start-challenge" class="bg-zinc-800/60 border border-zinc-700 rounded-xl p-3 text-left hover:bg-zinc-700 transition">
+                        <strong class="block text-white">⚡ Desafio</strong>
+                        <span class="text-xs text-zinc-400">20s por questão.</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="game-screen" class="hidden relative z-10 flex flex-col items-center w-full">
+            <div id="game-hud-20" class="hidden">
+                <div class="hud-item" id="lives-display">❤️❤️❤️</div>
+                <div class="hud-item" id="combo-display">🔥 Combo: 0</div>
+                <button id="restart-game-btn" onclick="restartGame()" title="Reiniciar jogo">↻ Reiniciar</button>
+            </div>
+
+            <div id="progress-wrap-20" class="hidden w-full mb-3">
+                <div class="flex justify-between text-xs text-zinc-500 mb-1">
+                    <span>Progresso</span>
+                    <span id="progress-percent">0%</span>
+                </div>
+                <div class="h-2 bg-zinc-800 rounded-full overflow-hidden border border-zinc-700">
+                    <div id="progress-bar-20" class="h-full bg-zinc-200 transition-all duration-500" style="width:0%"></div>
+                </div>
+            </div>
+
+            <div id="timer-wrap-20" class="hidden w-full mb-3">
+                <div class="flex items-center justify-between text-xs text-zinc-500 mb-1">
+                    <span>Tempo</span>
+                    <span id="timer-text">20s</span>
+                </div>
+                <div class="h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+                    <div id="timer-bar" class="h-full bg-zinc-400 transition-all duration-1000" style="width:100%"></div>
+                </div>
+            </div>
+
+            <div id="mode-panel-20" class="hidden w-full grid grid-cols-1 md:grid-cols-3 gap-3 max-w-lg mx-auto mb-4">
+                <button onclick="setGameMode('classic')" id="mode-classic" class="mode-btn bg-zinc-800 border border-zinc-500 rounded-xl p-3 text-left hover:bg-zinc-700 transition">
+                    <strong class="block text-white">🎓 Clássico</strong>
+                    <span class="text-xs text-zinc-400">Sem pressão de tempo.</span>
+                </button>
+                <button onclick="setGameMode('challenge')" id="mode-challenge" class="mode-btn bg-zinc-800 border border-zinc-700 rounded-xl p-3 text-left hover:bg-zinc-700 transition">
+                    <strong class="block text-white">⚡ Desafio</strong>
+                    <span class="text-xs text-zinc-400">20 segundos por questão.</span>
+                </button>
+                <button onclick="setGameMode('review')" id="mode-review" class="mode-btn bg-zinc-800 border border-zinc-700 rounded-xl p-3 text-left hover:bg-zinc-700 transition">
+                    <strong class="block text-white">📚 Revisão</strong>
+                    <span class="text-xs text-zinc-400">Foco nas questões erradas.</span>
+                </button>
+            </div>
+
+            <div class="w-full flex justify-between items-center mb-4 text-sm font-semibold text-zinc-400">
+                <span id="question-counter">Situação 1/6</span>
+                <span id="score-display" class="bg-zinc-800 px-4 py-1 rounded-full border border-zinc-600">Pontos: 0</span>
+            </div>
+
+            <div class="w-full bg-black/40 rounded-xl p-6 md:p-8 mb-6 border border-zinc-700 text-center shadow-inner relative">
+                <h3 id="question-text" class="text-xl md:text-2xl text-zinc-100 mb-4 font-light leading-relaxed"></h3>
+                <p id="lyric-text" class="lyric-font text-2xl md:text-3xl font-bold leading-tight text-white italic"></p>
+            </div>
+
+            <div id="options-container" class="grid grid-cols-1 gap-3 w-full mb-6"></div>
+
+            <div id="explanation-box" class="hidden w-full bg-zinc-800/80 border-l-4 border-zinc-300 p-4 rounded-r-lg mb-6 text-left fade-in">
+                <p id="explanation-title" class="text-xs text-zinc-400 uppercase tracking-wider mb-1 font-bold">Por que isso acontece?</p>
+                <p id="explanation-text" class="text-sm text-zinc-200"></p>
+            </div>
+
+            <button id="next-btn" onclick="nextQuestion()" class="hidden w-full bg-zinc-200 text-zinc-900 font-bold py-3 px-6 rounded-xl hover:bg-white transition-colors shadow-lg">
+                Próxima Situação →
+            </button>
+        </div>
+
+        <div id="end-screen" class="hidden text-center relative z-10 fade-in">
+            <h2 class="lyric-font text-4xl md:text-5xl font-bold mb-4 text-white">Fim da Análise</h2>
+            <div class="bg-black/40 rounded-full w-40 h-40 flex items-center justify-center mx-auto mb-6 border-2 border-zinc-500 shadow-[0_0_30px_rgba(255,255,255,0.1)]">
+                <p class="text-5xl font-black text-white"><span id="final-score">0</span>/<span id="total-questions">0</span></p>
+            </div>
+            <p id="final-message" class="text-lg text-zinc-300 mb-8 max-w-md mx-auto"></p>
+            <button onclick="restartGame()" class="bg-zinc-200 hover:bg-white text-zinc-900 font-bold py-3 px-8 rounded-full text-lg transition-all transform hover:scale-105">
+                Tentar Novamente
+            </button>
+
+            <div id="advanced-results" class="hidden mt-6 w-full max-w-xl mx-auto text-left">
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+                    <div class="bg-zinc-800/70 border border-zinc-700 rounded-xl p-3">
+                        <div class="text-xs text-zinc-500">Acertos</div>
+                        <div id="stat-correct" class="text-xl font-bold">0</div>
+                    </div>
+                    <div class="bg-zinc-800/70 border border-zinc-700 rounded-xl p-3">
+                        <div class="text-xs text-zinc-500">Erros</div>
+                        <div id="stat-wrong" class="text-xl font-bold">0</div>
+                    </div>
+                    <div class="bg-zinc-800/70 border border-zinc-700 rounded-xl p-3">
+                        <div class="text-xs text-zinc-500">Melhor combo</div>
+                        <div id="stat-combo" class="text-xl font-bold">0</div>
+                    </div>
+                    <div class="bg-zinc-800/70 border border-zinc-700 rounded-xl p-3">
+                        <div class="text-xs text-zinc-500">Conquistas</div>
+                        <div id="stat-badges" class="text-xl font-bold">0</div>
+                    </div>
+                </div>
+                <div class="bg-zinc-800/50 border border-zinc-700 rounded-xl p-4">
+                    <h3 class="font-bold text-white mb-3">Desempenho por conteúdo</h3>
+                    <div id="topic-stats" class="space-y-2"></div>
+                </div>
+                <button onclick="showReview()" class="w-full mt-4 bg-zinc-800 hover:bg-zinc-700 border border-zinc-600 text-zinc-100 font-bold py-3 px-6 rounded-xl transition">
+                    📚 Revisar minhas respostas
+                </button>
+            </div>
+            <div id="review-panel" class="hidden mt-6 w-full max-w-xl mx-auto text-left">
+                <div class="flex items-center justify-between mb-3">
+                    <h3 class="text-xl font-bold">📚 Revisão</h3>
+                    <button onclick="hideReview()" class="text-xs text-zinc-400 hover:text-white">Fechar</button>
+                </div>
+                <div id="review-list" class="space-y-3"></div>
+            </div>
+        </div>
+
+        <div id="streak-toast" class="hidden"></div>
+    </main>
+
+    <script>
+        const playlists = {
+            adele: {
+                name: "Someone Like You",
+                questions: [{
+                    question: "O Grande Mistério: A música fala de um ex-namorado. Por que a Adele usa quase exclusivamente o Simple Past para falar da relação deles, e NÃO o Present Perfect?",
+                    lyric: "\"I heard that your dreams came true...\"",
+                    correct: "Porque a relação acabou completamente. Não há mais conexão de continuidade com o presente dela.",
+                    options: [
+                        "Porque o Present Perfect só é usado para falar de planos para o futuro.",
+                        "Porque a relação acabou completamente. Não há mais conexão de continuidade com o presente dela.",
+                        "Porque o Present Perfect exige o uso de datas exatas na frase (ex: yesterday), e ela não quis revelar.",
+                        "Porque o Present Perfect não pode ser usado com o pronome 'I' (Eu)."
+                    ],
+                    explanation: "Essa é a essência do Present Perfect! Ele conecta o passado ao presente. Como a relação deles ficou totalmente no passado (ação finalizada), o Simple Past (came, heard) é a única escolha correta. Usar Present Perfect daria a entender que a relação ainda estaria acontecendo ou recém-terminada."
+                }, {
+                    question: "Reflexão sobre o Impacto: Se a Adele quisesse dizer que o rapaz 'sossegou' (settle down) e focar na EXPERIÊNCIA DE VIDA dele até hoje (sem importar quando aconteceu), como essa frase ficaria no Present Perfect?",
+                    lyric: "Na música: \"...you're settled down\"",
+                    correct: "You have settled down.",
+                    options: [
+                        "You will settle down.",
+                        "You are settling down.",
+                        "You settle down.",
+                        "You have settled down."
+                    ],
+                    explanation: "Perfeito! 'You have settled down' foca no fato/experiência de que ele sossegou. No Present Perfect (Have/Has + Particípio), o 'quando' não importa, o que importa é a bagagem de vida dele até o momento presente."
+                }, {
+                    question: "Mudança de Tempo Verbal: No trecho abaixo, Adele usa o Future Simple (will). Por que ela escolheu esse tempo verbal?",
+                    lyric: "\"Never mind, I'll find someone like you\"",
+                    correct: "Para expressar uma decisão espontânea ou uma promessa feita no momento da fala.",
+                    options: [
+                        "Porque é um plano que ela já tinha organizado detalhadamente na sua agenda.",
+                        "Para expressar uma decisão espontânea ou uma promessa feita no momento da fala.",
+                        "Porque indica uma ação contínua que já estava acontecendo no passado.",
+                        "Para descrever uma rotina que ela fará todos os dias."
+                    ],
+                    explanation: "O 'will' (I'll) é perfeito para promessas e decisões tomadas de sopetão! Ela está triste e, naquele exato momento de desabafo, promete a si mesma: 'Deixa pra lá, eu vou encontrar alguém como você'."
+                }, {
+                    question: "Verdades Universais: Observe os verbos 'lasts' e 'hurts' no Present Simple. Qual é o papel desse tempo verbal neste famoso refrão?",
+                    lyric: "\"Sometimes it lasts in love, but sometimes it hurts instead\"",
+                    correct: "Expressar fatos gerais e verdades universais sobre como o amor funciona.",
+                    options: [
+                        "Expressar fatos gerais e verdades universais sobre como o amor funciona.",
+                        "Descrever o que está acontecendo fisicamente com ela neste exato segundo.",
+                        "Indicar uma ação que começou no passado e continua até agora.",
+                        "Falar de planos futuros para o seu próximo relacionamento."
+                    ],
+                    explanation: "O Present Simple não serve só para rotinas (acordar, comer), mas também para 'Verdades Universais'. Na visão dela, é uma lei da vida: o amor às vezes dura, às vezes machuca. É um fato geral."
+                }, {
+                    question: "O Momento Exato: Adele diz 'I hate to turn up...' (odeio aparecer/chegar). Se ela quisesse enfatizar a ação de 'aparecer' acontecendo NESTE EXATO SEGUNDO, usando o Present Continuous, como ficaria?",
+                    lyric: "Na música: \"I hate to turn up out of the blue uninvited\"",
+                    correct: "I am turning up out of the blue uninvited right now.",
+                    options: [
+                        "I turn up out of the blue uninvited right now.",
+                        "I have turned up out of the blue uninvited right now.",
+                        "I am turning up out of the blue uninvited right now.",
+                        "I will turn up out of the blue uninvited right now."
+                    ],
+                    explanation: "Isso aí! O Present Continuous (am/is/are + verbo com -ing) foca no 'agora mesmo'. 'I am turning up' significa que ela está fisicamente aparecendo na porta da pessoa naquele exato instante."
+                }, {
+                    question: "Memória e tempo: no trecho em que Adele diz que 'only yesterday' parece ter sido o melhor momento da vida deles, por que o Simple Past é adequado?",
+                    lyric: "\"Only yesterday was the time of our lives\"",
+                    correct: "Porque ela descreve um período passado e já encerrado como uma lembrança.",
+                    options: [
+                        "Porque ela fala de uma rotina que acontece todos os dias.",
+                        "Porque ela descreve um período passado e já encerrado como uma lembrança.",
+                        "Porque o Simple Past só pode ser usado com sentimentos.",
+                        "Porque 'yesterday' sempre exige Present Perfect."
+                    ],
+                    explanation: "A expressão 'only yesterday' coloca a situação em um momento passado. Adele está olhando para uma época que já terminou e comparando-a com o presente, por isso o Simple Past se encaixa na narrativa da lembrança."
+                }, {
+                    question: "A música começa dizendo que Adele ouviu que o antigo parceiro está casado e que os sonhos dele se realizaram. O que o verbo 'heard' revela sobre a informação?",
+                    lyric: "\"I heard that your dreams came true\"",
+                    correct: "Ela apresenta a informação como algo que chegou até ela, uma notícia que recebeu.",
+                    options: [
+                        "Ela está descrevendo algo que está vendo acontecer agora.",
+                        "Ela apresenta a informação como algo que chegou até ela, uma notícia que recebeu.",
+                        "Ela está fazendo uma promessa para o futuro.",
+                        "Ela está descrevendo uma rotina diária."
+                    ],
+                    explanation: "O Simple Past em 'heard' apresenta o ato de ouvir como um acontecimento no passado. A música mostra Adele recebendo essa notícia antes de refletir sobre ela."
+                }, {
+                    question: "Observe 'you're married now'. Por que Adele usa uma forma de Present Simple com 'be' para falar da situação atual dele?",
+                    lyric: "\"That you found a girl and you're married now\"",
+                    correct: "Porque 'you're married' descreve um estado atual no presente.",
+                    options: [
+                        "Porque casamento é sempre uma ação contínua com -ing.",
+                        "Porque 'you're married' descreve um estado atual no presente.",
+                        "Porque o Simple Past não existe com o verbo 'be'.",
+                        "Porque o Future Simple é obrigatório para estados."
+                    ],
+                    explanation: "Aqui, 'are' não descreve uma ação em andamento. Ele apresenta o estado atual: ele está casado agora. A palavra 'now' reforça essa referência ao presente."
+                }, {
+                    question: "Na frase 'I couldn't stay away', por que o verbo aparece no passado?",
+                    lyric: "\"But I couldn't stay away, I couldn't fight it\"",
+                    correct: "Porque Adele está contando uma dificuldade que aconteceu naquele episódio passado.",
+                    options: [
+                        "Porque 'couldn't' é uma forma de futuro.",
+                        "Porque Adele está contando uma dificuldade que aconteceu naquele episódio passado.",
+                        "Porque o Present Perfect sempre usa 'couldn't'.",
+                        "Porque o verbo 'stay' só pode existir no passado."
+                    ],
+                    explanation: "'Couldn't' é a forma passada de 'can' usada para expressar incapacidade. No contexto da música, Adele conta que não conseguiu se manter afastada naquele momento."
+                }, {
+                    question: "A linha 'I had hoped...' apresenta uma expectativa anterior a outro acontecimento passado. Por que o Past Perfect ajuda a construir essa ideia?",
+                    lyric: "\"I had hoped you'd see my face\"",
+                    correct: "Porque mostra uma esperança que já existia antes de outro momento passado da narrativa.",
+                    options: [
+                        "Porque indica uma rotina presente.",
+                        "Porque mostra uma esperança que já existia antes de outro momento passado da narrativa.",
+                        "Porque 'had' transforma qualquer frase em futuro.",
+                        "Porque o Past Perfect serve apenas para ações que estão acontecendo agora."
+                    ],
+                    explanation: "O Past Perfect (had + past participle) pode situar uma ação ou estado antes de outro ponto no passado. A esperança já existia antes do encontro descrito pela narradora."
+                }, {
+                    question: "No refrão, Adele diz 'I wish nothing but the best for you'. Que função tem o verbo 'wish' nesse contexto?",
+                    lyric: "\"I wish nothing but the best for you\"",
+                    correct: "Expressar um desejo sobre a situação da outra pessoa.",
+                    options: [
+                        "Expressar uma ação física que está acontecendo.",
+                        "Expressar uma lembrança encerrada no passado.",
+                        "Expressar um desejo sobre a situação da outra pessoa.",
+                        "Expressar uma obrigação para o futuro."
+                    ],
+                    explanation: "O verbo 'wish' é usado para expressar um desejo. No refrão, Adele deseja coisas boas para o ex-parceiro, mesmo apesar da dor do término."
+                }, {
+                    question: "Em 'Don't forget me', Adele usa uma forma no imperativo. O que ela está fazendo linguisticamente?",
+                    lyric: "\"Don't forget me, I beg\"",
+                    correct: "Ela está fazendo um pedido direto para que ele não a esqueça.",
+                    options: [
+                        "Ela está descrevendo uma rotina.",
+                        "Ela está relatando um acontecimento passado.",
+                        "Ela está fazendo um pedido direto para que ele não a esqueça.",
+                        "Ela está fazendo uma previsão."
+                    ],
+                    explanation: "O imperativo negativo 'Don't + verbo' é usado para dar uma instrução ou fazer um pedido para que algo não aconteça. Aqui, o pedido é emocional e direto."
+                }, {
+                    question: "A expressão 'You know how the time flies' usa Present Simple. Por que esse tempo funciona bem nessa reflexão?",
+                    lyric: "\"You know how the time flies\"",
+                    correct: "Porque ela fala de uma ideia geral sobre a passagem do tempo.",
+                    options: [
+                        "Porque descreve uma ação acontecendo exatamente neste segundo.",
+                        "Porque ela fala de uma ideia geral sobre a passagem do tempo.",
+                        "Porque é uma ação totalmente encerrada no passado.",
+                        "Porque é uma promessa para o futuro."
+                    ],
+                    explanation: "O Present Simple pode expressar percepções e ideias gerais. Adele faz uma reflexão sobre como o tempo passa rapidamente."
+                }, {
+                    question: "Em 'Regrets and mistakes, they're memories made', como a escolha das palavras ajuda a construir a relação da narradora com o passado?",
+                    lyric: "\"Regrets and mistakes, they're memories made\"",
+                    correct: "Ela apresenta erros e arrependimentos como experiências que ficaram transformadas em memórias.",
+                    options: [
+                        "Ela afirma que os erros ainda estão acontecendo.",
+                        "Ela apresenta erros e arrependimentos como experiências que ficaram transformadas em memórias.",
+                        "Ela diz que cometerá os mesmos erros amanhã.",
+                        "Ela afirma que não se lembra de nada."
+                    ],
+                    explanation: "A imagem de 'memories' mostra que os acontecimentos pertencem à história vivida pelo casal. A letra olha para trás e transforma erros e arrependimentos em lembranças."
+                }, {
+                    question: "Na pergunta 'Who could have known...?', qual é o efeito de 'could have known' no sentido da música?",
+                    lyric: "\"Who could have known how bittersweet this would taste?\"",
+                    correct: "Expressar que o resultado daquela história não poderia ter sido previsto daquela forma.",
+                    options: [
+                        "Mostrar uma rotina atual.",
+                        "Expressar que o resultado daquela história não poderia ter sido previsto daquela forma.",
+                        "Dar uma ordem para outra pessoa.",
+                        "Descrever uma ação que está ocorrendo agora."
+                    ],
+                    explanation: "A construção 'could have + past participle' permite falar, olhando para o passado, de uma possibilidade ou capacidade que não se concretizou. A pergunta transmite surpresa diante do resultado."
+                }, {
+                    question: "A expressão 'for me, it isn't over' está no presente. O que isso revela sobre o ponto de vista da narradora?",
+                    lyric: "\"That for me, it isn't over\"",
+                    correct: "Para ela, emocionalmente, o relacionamento ainda não está encerrado.",
+                    options: [
+                        "Ela afirma que o relacionamento continua oficialmente.",
+                        "Para ela, emocionalmente, o relacionamento ainda não está encerrado.",
+                        "Ela está dizendo que o término acontecerá amanhã.",
+                        "Ela está apenas descrevendo uma lembrança distante."
+                    ],
+                    explanation: "O Present Simple em 'it isn't over' apresenta o estado atual da narradora. A música contrasta o passado da relação com o fato de que, para ela, emocionalmente, ainda não acabou."
+                }, {
+                    question: "Em 'I'll find someone like you', Adele usa 'will'. Dentro do contexto do refrão, qual interpretação faz mais sentido?",
+                    lyric: "\"I'll find someone like you\"",
+                    correct: "Ela expressa uma decisão ou determinação sobre o futuro.",
+                    options: [
+                        "Ela descreve uma rotina que já acontece.",
+                        "Ela expressa uma decisão ou determinação sobre o futuro.",
+                        "Ela conta uma ação concluída antes do relacionamento.",
+                        "Ela descreve uma ação acontecendo exatamente agora."
+                    ],
+                    explanation: "Will pode apresentar decisões, promessas e determinações sobre o futuro. No refrão, a frase funciona como uma decisão de seguir em frente."
+                }, {
+                    question: "A música repete 'Sometimes it lasts in love, but sometimes it hurts instead'. Por que o Present Simple é especialmente apropriado aqui?",
+                    lyric: "\"Sometimes it lasts in love, but sometimes it hurts instead\"",
+                    correct: "Porque a frase apresenta uma reflexão geral sobre como os relacionamentos podem ser.",
+                    options: [
+                        "Porque descreve exclusivamente o que Adele está fazendo agora.",
+                        "Porque apresenta uma reflexão geral sobre como os relacionamentos podem ser.",
+                        "Porque conta um único acontecimento em um dia específico.",
+                        "Porque fala de um plano que ela fará amanhã."
+                    ],
+                    explanation: "O Present Simple é adequado para generalizações. O refrão transforma uma experiência pessoal em uma observação mais ampla sobre o amor."
+                }, {
+                    question: "Compare 'I heard that your dreams came true' com 'it isn't over'. O que a mudança de tempo verbal ajuda a criar na narrativa?",
+                    lyric: "\"I heard...\" / \"it isn't over\"",
+                    correct: "Um contraste entre acontecimentos passados e o estado emocional presente de Adele.",
+                    options: [
+                        "Apenas uma repetição sem diferença de sentido.",
+                        "Um contraste entre acontecimentos passados e o estado emocional presente de Adele.",
+                        "Uma mudança do inglês para outro idioma.",
+                        "Uma diferença apenas de pronúncia."
+                    ],
+                    explanation: "'Heard' e 'came true' colocam informações no passado, enquanto 'isn't over' traz o sentimento da narradora para o presente. A alternância ajuda a contar a história e mostrar que a emoção permanece."
+                }, {
+                    question: "A música mistura Simple Past e formas de presente em diferentes momentos. Qual interpretação explica melhor essa escolha?",
+                    lyric: "Contexto: lembranças do relacionamento + sentimentos da narradora no presente.",
+                    correct: "Ela alterna entre contar o que aconteceu e mostrar o que ainda sente agora.",
+                    options: [
+                        "Ela usa tempos verbais aleatoriamente, sem relação com o significado.",
+                        "Ela alterna entre contar o que aconteceu e mostrar o que ainda sente agora.",
+                        "Ela usa passado somente para ações futuras.",
+                        "Ela usa presente somente para fatos históricos."
+                    ],
+                    explanation: "A letra vai e volta entre a história que aconteceu e a perspectiva atual de Adele. Os tempos verbais ajudam a separar lembrança, reflexão e sentimento presente."
+                }]
+            },
+            u2: {
+                name: "I Still Haven't Found What I'm Looking For",
+                questions: [{
+                    question: "O título da música usa 'I still haven't found'. Por que o Present Perfect é a escolha perfeita aqui?",
+                    lyric: "\"I still haven't found what I'm looking for\"",
+                    correct: "Porque expressa uma busca que começou no passado e continua até o presente, sem resultado.",
+                    options: [
+                        "Porque é uma ação que aconteceu uma vez no passado e acabou.",
+                        "Porque expressa uma busca que começou no passado e continua até o presente, sem resultado.",
+                        "Porque indica uma ação futura.",
+                        "Porque descreve uma rotina atual."
+                    ],
+                    explanation: "O Present Perfect com 'still' e 'haven't' mostra que a busca é contínua, desde algum momento no passado até agora, e ainda não foi concluída – perfeito para o tema da música."
+                }, {
+                    question: "Em 'I have climbed highest mountains', qual é a função do Present Perfect?",
+                    lyric: "\"I have climbed highest mountains\"",
+                    correct: "Falar de uma experiência de vida, sem especificar quando aconteceu.",
+                    options: [
+                        "Falar de uma ação que aconteceu em um momento específico no passado.",
+                        "Falar de uma experiência de vida, sem especificar quando aconteceu.",
+                        "Descrever uma ação em andamento agora.",
+                        "Expressar uma rotina diária."
+                    ],
+                    explanation: "O Present Perfect é usado para experiências de vida. 'Have climbed' indica que essa ação ocorreu em algum momento da vida do cantor, enfatizando a bagagem, não o momento exato."
+                }, {
+                    question: "Em 'I have run through the fields', o que o Present Perfect comunica?",
+                    lyric: "\"I have run through the fields\"",
+                    correct: "Uma experiência de vida, sem tempo definido.",
+                    options: [
+                        "Uma ação concluída ontem.",
+                        "Uma experiência de vida, sem tempo definido.",
+                        "Uma ação que está acontecendo agora.",
+                        "Um plano para o futuro."
+                    ],
+                    explanation: "Assim como a anterior, 'have run' é uma experiência – o cantor já correu pelos campos em algum momento, e isso faz parte de sua história."
+                }, {
+                    question: "Em 'I have scaled these city walls', o Present Perfect é usado para:",
+                    lyric: "\"I have scaled these city walls\"",
+                    correct: "Expressar uma experiência passada com relevância presente.",
+                    options: [
+                        "Expressar uma ação rotineira.",
+                        "Expressar uma experiência passada com relevância presente.",
+                        "Descrever uma ação futura.",
+                        "Indicar uma ação em andamento."
+                    ],
+                    explanation: "A escalada dos muros é uma experiência que faz parte da jornada do cantor, e o Present Perfect a conecta ao presente, mostrando tudo o que ele já fez."
+                }, {
+                    question: "Por que 'I have kissed honey lips' usa Present Perfect e não Simple Past?",
+                    lyric: "\"I have kissed honey lips\"",
+                    correct: "Porque enfatiza a experiência, não o momento exato.",
+                    options: [
+                        "Porque ocorreu há muito tempo.",
+                        "Porque enfatiza a experiência, não o momento exato.",
+                        "Porque é uma ação que continua.",
+                        "Porque é uma verdade geral."
+                    ],
+                    explanation: "O foco está na experiência vivida (kissed honey lips), não em quando aconteceu. O Present Perfect é o tempo das experiências."
+                }, {
+                    question: "Em 'I have spoke with the tongue of angels', o verbo 'spoke' está no particípio passado irregular. O que isso indica?",
+                    lyric: "\"I have spoke with the tongue of angels\"",
+                    correct: "Uma experiência espiritual ou metafórica, sem tempo definido.",
+                    options: [
+                        "Uma ação que ocorreu ontem.",
+                        "Uma experiência espiritual ou metafórica, sem tempo definido.",
+                        "Uma ação contínua no presente.",
+                        "Uma previsão para o futuro."
+                    ],
+                    explanation: "Aqui, 'have spoke' (forma alternativa de 'spoken') é uma experiência simbólica – o cantor já 'falou com língua de anjos', uma experiência marcante em sua vida."
+                }, {
+                    question: "Em 'I have held the hand of a devil', qual a ideia transmitida?",
+                    lyric: "\"I have held the hand of a devil\"",
+                    correct: "Uma experiência intensa e contrastante, parte da jornada de vida.",
+                    options: [
+                        "Uma ação que acontece todos os dias.",
+                        "Uma experiência intensa e contrastante, parte da jornada de vida.",
+                        "Uma ação que está em andamento.",
+                        "Um plano para o futuro."
+                    ],
+                    explanation: "O Present Perfect aqui mostra que ele já viveu experiências boas e ruins, e todas fazem parte de quem ele é agora."
+                }, {
+                    question: "Em 'I was warm in the night', por que o Simple Past é usado em vez do Present Perfect?",
+                    lyric: "\"I was warm in the night\"",
+                    correct: "Porque descreve um estado passado específico, sem conexão com o presente.",
+                    options: [
+                        "Porque é uma experiência que continua.",
+                        "Porque descreve um estado passado específico, sem conexão com o presente.",
+                        "Porque é uma verdade universal.",
+                        "Porque indica uma ação futura."
+                    ],
+                    explanation: "'Was warm' é um estado momentâneo em uma noite passada. Não há relevância para o presente, por isso o Simple Past é adequado."
+                }, {
+                    question: "Em 'I was cold as a stone', o Simple Past é usado porque:",
+                    lyric: "\"I was cold as a stone\"",
+                    correct: "É uma descrição de um estado passado, não uma experiência que se estende ao presente.",
+                    options: [
+                        "É uma descrição de um estado passado, não uma experiência que se estende ao presente.",
+                        "É uma ação contínua.",
+                        "É uma promessa para o futuro.",
+                        "É uma verdade geral."
+                    ],
+                    explanation: "Assim como 'warm', 'cold as a stone' é um estado que ocorreu em um momento específico no passado, sem continuidade."
+                }, {
+                    question: "O contraste entre 'I have climbed' e 'I was warm' mostra:",
+                    lyric: "Comparando os versos",
+                    correct: "A diferença entre experiências de vida (Present Perfect) e estados momentâneos (Simple Past).",
+                    options: [
+                        "A diferença entre ações futuras e passadas.",
+                        "A diferença entre experiências de vida (Present Perfect) e estados momentâneos (Simple Past).",
+                        "A diferença entre rotina e exceção.",
+                        "A diferença entre presente e passado recente."
+                    ],
+                    explanation: "O cantor usa Present Perfect para tudo que já viveu (experiências) e Simple Past para sensações passageiras, mostrando a riqueza dos tempos verbais."
+                }, {
+                    question: "Em 'But I still haven't found what I'm looking for', a palavra 'still' reforça:",
+                    lyric: "\"But I still haven't found what I'm looking for\"",
+                    correct: "A continuidade da busca até o momento presente.",
+                    options: [
+                        "A continuidade da busca até o momento presente.",
+                        "Que a busca já terminou.",
+                        "Que a busca começará amanhã.",
+                        "Que a busca é uma rotina."
+                    ],
+                    explanation: "'Still' com Present Perfect indica que a ação (não encontrar) continua acontecendo até agora, enfatizando a persistência."
+                }, {
+                    question: "O refrão repete 'I still haven't found'. Isso sugere:",
+                    lyric: "\"I still haven't found what I'm looking for\" (repetido)",
+                    correct: "Uma ênfase na frustração e na persistência da busca.",
+                    options: [
+                        "Uma ênfase na frustração e na persistência da busca.",
+                        "Que ele desistiu.",
+                        "Que ele encontrou.",
+                        "Que ele nunca procurou."
+                    ],
+                    explanation: "A repetição do Present Perfect com 'still' reforça a ideia de que a busca é longa e ainda não terminou, transmitindo a mensagem central da música."
+                }, {
+                    question: "Em 'I have broke these chains', qual é a forma correta do particípio e o que ela expressa?",
+                    lyric: "\"I have broke these chains\"",
+                    correct: "Quebrou correntes (experiência de libertação), com particípio 'broken' na forma padrão.",
+                    options: [
+                        "Quebrou correntes (experiência de libertação), com particípio 'broken' na forma padrão.",
+                        "Quebrou correntes (ação pontual), com Simple Past.",
+                        "Quebra correntes (rotina), com Present Simple.",
+                        "Quebrará correntes (futuro), com will."
+                    ],
+                    explanation: "Aqui 'broke' é usado como particípio (variação coloquial). A ideia é que ele já experimentou a libertação em algum momento de sua vida."
+                }, {
+                    question: "Em 'I have run', o verbo 'run' é um particípio irregular. Isso indica:",
+                    lyric: "\"I have run\"",
+                    correct: "Uma ação de correr que faz parte das experiências do cantor.",
+                    options: [
+                        "Uma ação de correr que faz parte das experiências do cantor.",
+                        "Uma ação que ele faz todos os dias.",
+                        "Uma ação que ele fará amanhã.",
+                        "Uma ação que está acontecendo agora."
+                    ],
+                    explanation: "'Run' no Present Perfect mostra que correr já foi uma experiência vivida, integrando-se à lista de suas conquistas."
+                }, {
+                    question: "Em 'I have believed', o Present Perfect sugere:",
+                    lyric: "\"I have believed\"",
+                    correct: "Que ele já teve crenças ao longo da vida, mas talvez não mais.",
+                    options: [
+                        "Que ele acredita agora.",
+                        "Que ele já teve crenças ao longo da vida, mas talvez não mais.",
+                        "Que ele nunca acreditou.",
+                        "Que ele acreditará no futuro."
+                    ],
+                    explanation: "O Present Perfect com 'believed' indica que a crença ocorreu em algum momento – pode ter mudado, mas a experiência existiu."
+                }, {
+                    question: "Em 'You know I believe it', o Present Simple é usado porque:",
+                    lyric: "\"You know I believe it\"",
+                    correct: "Expressa uma crença atual e geral, não uma experiência passada.",
+                    options: [
+                        "Expressa uma crença atual e geral, não uma experiência passada.",
+                        "Expressa uma ação passada.",
+                        "Expressa uma ação futura.",
+                        "Expressa uma ação contínua."
+                    ],
+                    explanation: "'Believe' no Present Simple é um estado permanente ou verdade atual, diferente de 'have believed' que é uma experiência passada."
+                }, {
+                    question: "O que a alternância entre 'I have kissed' e 'I was warm' revela sobre a narrativa?",
+                    lyric: "Comparação entre versos",
+                    correct: "O cantor alterna entre experiências marcantes (Present Perfect) e sensações passageiras (Simple Past).",
+                    options: [
+                        "O cantor usa tempos aleatórios.",
+                        "O cantor alterna entre experiências marcantes (Present Perfect) e sensações passageiras (Simple Past).",
+                        "O cantor só usa Present Perfect.",
+                        "O cantor só usa Simple Past."
+                    ],
+                    explanation: "Essa alternância enriquece a letra: as experiências são eternizadas no Present Perfect, enquanto os estados são apenas passados."
+                }, {
+                    question: "Em 'I have spoke with the tongue of angels', o uso de 'spoke' (em vez de 'spoken') é:",
+                    lyric: "\"I have spoke with the tongue of angels\"",
+                    correct: "Uma variação coloquial do particípio, comum em músicas.",
+                    options: [
+                        "Um erro gramatical grave.",
+                        "Uma variação coloquial do particípio, comum em músicas.",
+                        "A forma correta do Simple Past.",
+                        "A forma correta do Present Continuous."
+                    ],
+                    explanation: "Em contextos informais e poéticos, o particípio passado pode aparecer como 'spoke' (em vez de 'spoken'), mantendo o sentido de experiência."
+                }, {
+                    question: "O título 'I Still Haven't Found' poderia ser substituído por 'I didn't find'? Por quê?",
+                    lyric: "Comparação de tempos",
+                    correct: "Não, porque 'didn't find' sugeriria que a busca acabou, enquanto o Present Perfect mostra que ela continua.",
+                    options: [
+                        "Sim, ambos têm o mesmo sentido.",
+                        "Não, porque 'didn't find' sugeriria que a busca acabou, enquanto o Present Perfect mostra que ela continua.",
+                        "Sim, mas apenas no passado.",
+                        "Não, porque 'didn't find' é futuro."
+                    ],
+                    explanation: "A diferença é crucial: Simple Past ('didn't find') coloca a ação no passado e encerrada; Present Perfect ('haven't found') liga ao presente, indicando que a busca ainda ocorre."
+                }, {
+                    question: "Em 'I have scaled these city walls', se usássemos 'I scaled', o que mudaria?",
+                    lyric: "\"I have scaled these city walls\" vs \"I scaled these city walls\"",
+                    correct: "'I scaled' seria um fato passado sem conexão com o presente, enquanto 'have scaled' enfatiza a experiência.",
+                    options: [
+                        "'I scaled' seria um fato passado sem conexão com o presente, enquanto 'have scaled' enfatiza a experiência.",
+                        "Não há diferença.",
+                        "'I scaled' é mais formal.",
+                        "'I scaled' indica uma ação futura."
+                    ],
+                    explanation: "O Simple Past relata um evento concluído; o Present Perfect destaca a experiência vivida e sua relevância atual."
+                }]
+            }
+        };
+
+        let currentPlaylist = 'adele';
+        let currentQuestionIndex = 0;
+        let score = 0;
+        let answered = false;
+        let gameMode = 'classic';
+        let timerEnabled = false;
+        let soundEnabled = true;
+        let timeLeft = 20;
+        let timerInterval = null;
+        let combo = 0;
+        let bestCombo = 0;
+        let lives = 3;
+        let correctCount = 0;
+        let wrongCount = 0;
+        let answerLog = [];
+        let reviewMode = false;
+        let reviewQuestions = [];
+        let gameQuestions = [];
+
+        const startScreen = document.getElementById('start-screen');
+        const gameScreen = document.getElementById('game-screen');
+        const endScreen = document.getElementById('end-screen');
+        const questionText = document.getElementById('question-text');
+        const lyricText = document.getElementById('lyric-text');
+        const optionsContainer = document.getElementById('options-container');
+        const explanationBox = document.getElementById('explanation-box');
+        const explanationTitle = document.getElementById('explanation-title');
+        const explanationText = document.getElementById('explanation-text');
+        const nextBtn = document.getElementById('next-btn');
+        const questionCounter = document.getElementById('question-counter');
+        const scoreDisplay = document.getElementById('score-display');
+        const hud20 = document.getElementById('game-hud-20');
+        const livesDisplay = document.getElementById('lives-display');
+        const comboDisplay = document.getElementById('combo-display');
+        const progressWrap = document.getElementById('progress-wrap-20');
+        const progressBar = document.getElementById('progress-bar-20');
+        const progressPercent = document.getElementById('progress-percent');
+        const timerWrap = document.getElementById('timer-wrap-20');
+        const timerBar = document.getElementById('timer-bar');
+        const timerText = document.getElementById('timer-text');
+        const modePanel = document.getElementById('mode-panel-20');
+        const streakToast = document.getElementById('streak-toast');
+
+        function selectPlaylist(id) {
+            currentPlaylist = id;
+            document.querySelectorAll('.music-btn').forEach(btn => {
+                btn.classList.toggle('active', btn.dataset.playlist === id);
+            });
+            document.getElementById('current-song-name').textContent = playlists[id].name;
+            if (!startScreen.classList.contains('hidden')) {
+            }
+        }
+
+        function toggleAdvanced() {
+            document.getElementById('advanced-options').classList.toggle('hidden');
+        }
+
+        function setGameMode(mode) {
+            gameMode = mode;
+            document.querySelectorAll('.mode-btn').forEach(btn => {
+                btn.classList.remove('border-zinc-300');
+                btn.classList.add('border-zinc-700');
+            });
+            const selected = document.getElementById('mode-' + mode);
+            if (selected) {
+                selected.classList.remove('border-zinc-700');
+                selected.classList.add('border-zinc-300');
+            }
+        }
+
+        function startGame() {
+            gameQuestions = [...playlists[currentPlaylist].questions];
+            score = 0;
+            currentQuestionIndex = 0;
+            combo = 0;
+            bestCombo = 0;
+            lives = 3;
+            correctCount = 0;
+            wrongCount = 0;
+            answerLog = [];
+            reviewMode = false;
+            reviewQuestions = [];
+
+            timerEnabled = document.getElementById('classic-timer-toggle')?.checked || false;
+            soundEnabled = document.getElementById('sound-toggle')?.checked ?? true;
+
+            if (gameMode === 'review') {
+                gameMode = 'classic';
+                setGameMode('classic');
+            }
+
+            startScreen.classList.add('hidden');
+            endScreen.classList.add('hidden');
+            gameScreen.classList.remove('hidden');
+            hud20.classList.remove('hidden');
+            progressWrap.classList.remove('hidden');
+            modePanel.classList.add('hidden');
+
+            if (gameMode === 'challenge' || timerEnabled) {
+                timerWrap.classList.remove('hidden');
+            } else {
+                timerWrap.classList.add('hidden');
+            }
+
+            loadQuestion();
+        }
+
+        function loadQuestion() {
+            clearTimer();
+            answered = false;
+            nextBtn.classList.add('hidden');
+            explanationBox.classList.add('hidden');
+            explanationBox.classList.remove('border-emerald-500', 'border-rose-500');
+            explanationBox.classList.add('border-zinc-300');
+
+            const q = gameQuestions[currentQuestionIndex];
+            if (!q) return;
+
+            questionCounter.innerText = `Situação ${currentQuestionIndex + 1}/${gameQuestions.length}`;
+            scoreDisplay.innerText = `Pontos: ${score}`;
+            questionText.innerText = q.question;
+            lyricText.innerText = q.lyric;
+            optionsContainer.innerHTML = '';
+
+            const percent = Math.round((currentQuestionIndex / gameQuestions.length) * 100);
+            progressBar.style.width = percent + '%';
+            progressPercent.innerText = percent + '%';
+            updateHud();
+
+            const shuffledOptions = [...q.options].sort(() => Math.random() - 0.5);
+            shuffledOptions.forEach(option => {
+                const button = document.createElement('button');
+                button.innerText = option;
+                button.className =
+                    "option-btn bg-zinc-800 hover:bg-zinc-700 border border-zinc-600 text-zinc-200 text-sm md:text-base py-4 px-6 rounded-xl transition-all duration-300 text-left w-full";
+                button.onclick = () => checkAnswer(button, option, q.correct, q.explanation, q);
+                optionsContainer.appendChild(button);
+            });
+
+            if (gameMode === 'challenge' || timerEnabled) startTimer();
+        }
+
+        function startTimer() {
+            timeLeft = 20;
+            updateTimer();
+            clearTimer();
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimer();
+                if (timeLeft <= 0) {
+                    clearTimer();
+                    if (!answered) {
+                        const q = gameQuestions[currentQuestionIndex];
+                        const buttons = optionsContainer.querySelectorAll('button');
+                        buttons.forEach(btn => btn.disabled = true);
+                        wrongCount++;
+                        combo = 0;
+                        lives = Math.max(0, lives - 1);
+                        answerLog.push({ q, selected: "Tempo esgotado", correct: false });
+                        explanationTitle.innerText = "⏰ Tempo esgotado!";
+                        explanationTitle.className = "text-xs text-rose-400 uppercase tracking-wider mb-1 font-bold";
+                        explanationText.innerHTML =
+                            `<span class="text-rose-200">A resposta certa era: <strong>"${q.correct}"</strong></span><br><br>${q.explanation}`;
+                        explanationBox.classList.remove('border-zinc-300');
+                        explanationBox.classList.add('border-rose-500');
+                        explanationBox.classList.remove('hidden');
+                        answered = true;
+                        nextBtn.classList.remove('hidden');
+                        markCorrectButton(q.correct);
+                        playSound(false);
+                        updateHud();
+                        if (lives <= 0) {
+                            nextBtn.innerText = "Ver resultado →";
+                        }
+                    }
+                }
+            }, 1000);
+        }
+
+        function clearTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+        }
+
+        function updateTimer() {
+            timerText.innerText = timeLeft + 's';
+            timerBar.style.width = ((timeLeft / 20) * 100) + '%';
+        }
+
+        function markCorrectButton(correctOption) {
+            optionsContainer.querySelectorAll('button').forEach(btn => {
+                if (btn.innerText === correctOption) {
+                    btn.classList.add('correct-highlight');
+                } else {
+                    btn.classList.add('opacity-40');
+                }
+            });
+        }
+
+        function checkAnswer(selectedButton, selectedOption, correctOption, explanation, q) {
+            if (answered) return;
+            answered = true;
+            clearTimer();
+
+            const buttons = optionsContainer.querySelectorAll('button');
+            buttons.forEach(btn => {
+                btn.disabled = true;
+                btn.classList.remove('hover:bg-zinc-700');
+
+                if (btn.innerText === correctOption) {
+                    btn.classList.add('correct-highlight');
+                } else if (btn === selectedButton) {
+                    btn.classList.add('wrong-highlight');
+                } else {
+                    btn.classList.add('opacity-40');
+                }
+            });
+
+            const isCorrect = selectedOption === correctOption;
+            answerLog.push({ q, selected: selectedOption, correct: isCorrect });
+
+            if (isCorrect) {
+                correctCount++;
+                combo++;
+                bestCombo = Math.max(bestCombo, combo);
+
+                const bonus = Math.min(Math.max(combo - 1, 0), 4);
+                score += 1 + bonus;
+                scoreDisplay.innerText = `Pontos: ${score}`;
+
+                explanationTitle.innerText = "✨ Resposta Correta!";
+                explanationTitle.className = "text-xs text-emerald-400 uppercase tracking-wider mb-1 font-bold";
+                explanationText.innerHTML = explanation;
+                explanationBox.classList.remove('border-zinc-300');
+                explanationBox.classList.add('border-emerald-500');
+
+                if (combo >= 2) showToast(`🔥 Combo x${combo}! +${1 + bonus} pontos`);
+                playSound(true);
+            } else {
+                wrongCount++;
+                combo = 0;
+                lives = Math.max(0, lives - 1);
+
+                explanationTitle.innerText = "❌ Resposta Incorreta!";
+                explanationTitle.className = "text-xs text-rose-400 uppercase tracking-wider mb-1 font-bold";
+                explanationText.innerHTML =
+                    `<span class="text-rose-200">A resposta certa era: <strong>"${correctOption}"</strong></span><br><br><strong>Por que?</strong> ${explanation}`;
+                explanationBox.classList.remove('border-zinc-300');
+                explanationBox.classList.add('border-rose-500');
+                playSound(false);
+            }
+
+            explanationBox.classList.remove('hidden');
+            nextBtn.classList.remove('hidden');
+            if (currentQuestionIndex >= gameQuestions.length - 1 || lives <= 0) {
+                nextBtn.innerText = "Ver resultado →";
+            } else {
+                nextBtn.innerText = "Próxima Situação →";
+            }
+            updateHud();
+        }
+
+        function updateHud() {
+            livesDisplay.innerText = '❤️'.repeat(lives) + '🖤'.repeat(3 - lives);
+            comboDisplay.innerText = `🔥 Combo: ${combo}`;
+        }
+
+        function showToast(message) {
+            streakToast.innerText = message;
+            streakToast.classList.remove('hidden');
+            setTimeout(() => streakToast.classList.add('hidden'), 1500);
+        }
+
+        function nextQuestion() {
+            currentQuestionIndex++;
+            if (currentQuestionIndex < gameQuestions.length && lives > 0) {
+                loadQuestion();
+            } else {
+                showEndScreen();
+            }
+        }
+
+        function showEndScreen() {
+            clearTimer();
+            gameScreen.classList.add('hidden');
+            endScreen.classList.remove('hidden');
+            hud20.classList.add('hidden');
+            progressWrap.classList.add('hidden');
+            timerWrap.classList.add('hidden');
+
+            document.getElementById('final-score').innerText = score;
+            document.getElementById('total-questions').innerText = gameQuestions.length;
+
+            const rawPercentage = gameQuestions.length ? correctCount / gameQuestions.length : 0;
+            const messageEl = document.getElementById('final-message');
+
+            if (lives <= 0) {
+                messageEl.innerText = "As vidas acabaram, mas cada erro virou uma oportunidade de revisão. Veja suas respostas abaixo.";
+            } else if (rawPercentage === 1) {
+                messageEl.innerText = "Nota A+! Você dominou a reflexão sobre os tempos verbais. Grammar Master!";
+            } else if (rawPercentage >= 0.75) {
+                messageEl.innerText = "Excelente trabalho! Você mostrou um ótimo domínio dos contextos gramaticais.";
+            } else if (rawPercentage >= 0.5) {
+                messageEl.innerText = "Bom trabalho! Revise os pontos em que teve dificuldade e tente novamente.";
+            } else {
+                messageEl.innerText = "O mais importante é entender o porquê. Use a revisão para transformar os erros em aprendizado.";
+            }
+
+            document.getElementById('advanced-results').classList.remove('hidden');
+            document.getElementById('stat-correct').innerText = correctCount;
+            document.getElementById('stat-wrong').innerText = wrongCount;
+            document.getElementById('stat-combo').innerText = bestCombo;
+
+            const badges = [];
+            if (correctCount >= 5) badges.push('🎓');
+            if (bestCombo >= 5) badges.push('🔥');
+            if (rawPercentage >= 0.8) badges.push('🏆');
+            if (lives === 3) badges.push('❤️');
+            document.getElementById('stat-badges').innerText = badges.length;
+
+            renderTopicStats();
+            buildReviewQuestions();
+        }
+
+        function renderTopicStats() {
+            const topicMap = {};
+            answerLog.forEach(entry => {
+                const q = entry.q;
+                const text = q.question.toLowerCase();
+                let topic = "Grammar";
+                if (text.includes("perfect")) topic = "Present Perfect";
+                else if (text.includes("continuous")) topic = "Present Continuous";
+                else if (text.includes("simple past") || text.includes("passado")) topic = "Simple Past";
+                else if (text.includes("future") || text.includes("will") || text.includes("futuro")) topic = "Future";
+                else if (text.includes("present simple") || text.includes("rotina") || text.includes("verdade")) topic =
+                    "Present Simple";
+
+                if (!topicMap[topic]) topicMap[topic] = { right: 0, total: 0 };
+                topicMap[topic].total++;
+                if (entry.correct) topicMap[topic].right++;
+            });
+
+            const container = document.getElementById('topic-stats');
+            container.innerHTML = '';
+
+            Object.entries(topicMap).forEach(([topic, data]) => {
+                const pct = Math.round((data.right / data.total) * 100);
+                const row = document.createElement('div');
+                row.innerHTML = `
+                        <div class="flex justify-between text-xs mb-1">
+                            <span class="text-zinc-300">${topic}</span>
+                            <span class="text-zinc-500">${data.right}/${data.total} · ${pct}%</span>
+                        </div>
+                        <div class="h-2 bg-zinc-900 rounded-full overflow-hidden">
+                            <div class="h-full bg-zinc-300" style="width:${pct}%"></div>
+                        </div>
+                    `;
+                container.appendChild(row);
+            });
+        }
+
+        function buildReviewQuestions() {
+            reviewQuestions = answerLog.filter(entry => !entry.correct);
+            const list = document.getElementById('review-list');
+            list.innerHTML = '';
+
+            if (!reviewQuestions.length) {
+                list.innerHTML =
+                    `<div class="bg-zinc-800/60 border border-zinc-700 rounded-xl p-4 text-zinc-300">🎉 Você não errou nenhuma questão! Não há nada para revisar.</div>`;
+                return;
+            }
+
+            reviewQuestions.forEach((entry, index) => {
+                const item = document.createElement('div');
+                item.className = "bg-zinc-800/60 border border-zinc-700 rounded-xl p-4";
+                item.innerHTML = `
+                        <div class="text-xs text-zinc-500 mb-2">Erro ${index + 1}</div>
+                        <div class="font-semibold text-zinc-100">${escapeHtml(entry.q.question)}</div>
+                        <div class="text-sm text-rose-300 mt-2">Sua resposta: ${escapeHtml(entry.selected)}</div>
+                        <div class="text-sm text-emerald-300 mt-1">Correta: ${escapeHtml(entry.q.correct)}</div>
+                        <div class="text-sm text-zinc-400 mt-3">${escapeHtml(entry.q.explanation)}</div>
+                    `;
+                list.appendChild(item);
+            });
+        }
+
+        function showReview() {
+            document.getElementById('review-panel').classList.remove('hidden');
+            document.getElementById('review-panel').scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }
+
+        function hideReview() {
+            document.getElementById('review-panel').classList.add('hidden');
+        }
+
+        function escapeHtml(value) {
+            const div = document.createElement('div');
+            div.textContent = value;
+            return div.innerHTML;
+        }
+
+        function restartGame() {
+            hideReview();
+            document.getElementById('advanced-results').classList.add('hidden');
+            document.getElementById('review-panel').classList.add('hidden');
+            gameMode = 'classic';
+            setGameMode('classic');
+            startScreen.classList.remove('hidden');
+            endScreen.classList.add('hidden');
+            gameScreen.classList.add('hidden');
+            hud20.classList.add('hidden');
+            progressWrap.classList.add('hidden');
+            timerWrap.classList.add('hidden');
+            score = 0;
+            currentQuestionIndex = 0;
+            combo = 0;
+            bestCombo = 0;
+            lives = 3;
+            correctCount = 0;
+            wrongCount = 0;
+            answerLog = [];
+            reviewQuestions = [];
+            gameQuestions = [];
+            clearTimer();
+        }
+
+        function playSound(correct) {
+            if (!soundEnabled) return;
+            try {
+                const AudioCtx = window.AudioContext || window.webkitAudioContext;
+                if (!AudioCtx) return;
+                const ctx = new AudioCtx();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+
+                osc.type = 'sine';
+                osc.frequency.value = correct ? 660 : 220;
+                gain.gain.setValueAtTime(0.0001, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.08, ctx.currentTime + 0.01);
+                gain.gain.exponentialRampToValueAtTime(0.0001, ctx.currentTime + 0.16);
+
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.18);
+            } catch (e) { /* áudio opcional */ }
+        }
+
+        document.getElementById('start-classic').onclick = () => setGameMode('classic');
+        document.getElementById('start-challenge').onclick = () => setGameMode('challenge');
+
+        document.addEventListener('keydown', (event) => {
+            if (gameScreen.classList.contains('hidden')) return;
+            const buttons = [...optionsContainer.querySelectorAll('button')];
+            if (['1', '2', '3', '4'].includes(event.key) && !answered) {
+                const btn = buttons[Number(event.key) - 1];
+                if (btn) btn.click();
+            } else if (event.key === 'Enter' && answered && !nextBtn.classList.contains('hidden')) {
+                nextBtn.click();
+            }
+        });
+
+        selectPlaylist('adele');
+    </script>
+</body>
+</html>
